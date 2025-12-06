@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To-Do Dashboard</title>
+
+<style>
+    * {
+        margin: 0; padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+    }
+
+    body {
+        background: #eef1f5;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    /* ===================== Dashboard Layout ===================== */
+    .dashboard {
+        width: 100%;
+        max-width: 1000px;
+        display: flex;
+        gap: 20px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 260px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        height: fit-content;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .sidebar h2 {
+        margin-bottom: 15px;
+        font-size: 1.4rem;
+    }
+
+    /* Main todo area */
+    .todo-container {
+        flex: 1;
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .todo-container h2 {
+        font-size: 1.6rem;
+        margin-bottom: 15px;
+    }
+
+    /* Input */
+    .input-box {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .input-box input {
+        flex: 1;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+    }
+
+    .input-box button {
+        padding: 12px 18px;
+        background: #007bff;
+        border: none;
+        color: #fff;
+        font-size: 15px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .input-box button:hover {
+        background: #0060d1;
+    }
+
+    /* List */
+    ul { list-style: none; }
+
+    li {
+        background: #f6f6f6;
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: .3s;
+    }
+
+    li.completed span.text {
+        text-decoration: line-through;
+        opacity: .6;
+    }
+
+    .actions span {
+        font-size: 18px;
+        margin-left: 12px;
+        cursor: pointer;
+    }
+
+    .edit { color: #ff9800; }
+    .delete { color: #e60000; }
+    .check { color: green; }
+
+    /* Mobile Responsive */
+    @media(max-width: 768px) {
+        .dashboard {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>📊 Dashboard</h2>
+        <p>Total Tasks: <span id="totalTasks">0</span></p>
+        <p>Completed: <span id="completedTasks">0</span></p>
+        <p>Pending: <span id="pendingTasks">0</span></p>
+    </div>
+
+    <!-- Main To Do -->
+    <div class="todo-container">
+        <h2>📝 To-Do List</h2>
+
+        <div class="input-box">
+            <input type="text" id="taskInput" placeholder="Enter task...">
+            <button onclick="addTask()">Add</button>
+        </div>
+
+        <ul id="taskList"></ul>
+    </div>
+
+</div>
+
+<script>
+
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+    function saveTasks() {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+        renderTasks();
+    }
+
+    function addTask() {
+        const input = document.getElementById("taskInput");
+        const value = input.value.trim();
+        if (!value) return;
+
+        tasks.push({ text: value, completed: false });
+        input.value = "";
+        saveTasks();
+    }
+
+    function toggleComplete(index) {
+        tasks[index].completed = !tasks[index].completed;
+        saveTasks();
+    }
+
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+        saveTasks();
+    }
+
+    function editTask(index) {
+        let newText = prompt("Edit Task:", tasks[index].text);
+        if (newText !== null) {
+            tasks[index].text = newText.trim();
+            saveTasks();
+        }
+    }
+
+    function renderTasks() {
+        const ul = document.getElementById("taskList");
+        ul.innerHTML = "";
+
+        tasks.forEach((task, index) => {
+            ul.innerHTML += `
+                <li class="${task.completed ? 'completed' : ''}">
+                    <span class="text" onclick="toggleComplete(${index})">${task.text}</span>
+                    <div class="actions">
+                        <span class="check" onclick="toggleComplete(${index})">✔</span>
+                        <span class="edit" onclick="editTask(${index})">✎</span>
+                        <span class="delete" onclick="deleteTask(${index})">✖</span>
+                    </div>
+                </li>
+            `;
+        });
+
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        document.getElementById("totalTasks").innerText = tasks.length;
+        document.getElementById("completedTasks").innerText = tasks.filter(t => t.completed).length;
+        document.getElementById("pendingTasks").innerText = tasks.filter(t => !t.completed).length;
+    }
+
+    renderTasks();
+
+</script>
+
+</body>
+</html>
